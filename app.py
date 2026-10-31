@@ -10,15 +10,15 @@ st.set_page_config(page_title="Dog Cat And Couple AI", page_icon="🐶", layout=
 st.title("Dog Cat And Couple")
 st.markdown("**AI Object Detection & Segmentation System**")
 
-# กำหนดสีแบบคงที่ (BGR format) สำหรับแต่ละคลาส
-# ลำดับต้องตรงกับ Class ID ของคุณ (สมมติว่า 0: Cat, 1: Dog, 2: Man, 3: Woman)
-# ปรับสี BGR ตามต้องการ (Blue, Green, Red)
-COLORS = {
-    0: (255, 0, 0),    # Cat: สีน้ำเงิน (Blue)
-    1: (0, 255, 255),  # Dog: สีเหลือง (Yellow)
-    2: (0, 255, 0),    # Man: สีเขียว (Green)
-    3: (255, 0, 255)   # Woman: สีม่วง (Magenta)
-}
+# # กำหนดสีแบบคงที่ (BGR format) สำหรับแต่ละคลาส
+# # ลำดับต้องตรงกับ Class ID ของคุณ (สมมติว่า 0: Cat, 1: Dog, 2: Man, 3: Woman)
+# # ปรับสี BGR ตามต้องการ (Blue, Green, Red)
+# COLORS = {
+#     0: (255, 0, 0),    # Cat: สีน้ำเงิน (Blue)
+#     1: (0, 255, 255),  # Dog: สีเหลือง (Yellow)
+#     2: (0, 255, 0),    # Man: สีเขียว (Green)
+#     3: (255, 0, 255)   # Woman: สีม่วง (Magenta)
+# }
 
 @st.cache_resource
 def load_models():
@@ -44,19 +44,19 @@ if uploaded_file is not None:
     if st.button("อัปโหลดเพื่อวิเคราะห์", type="primary", use_container_width=True):
         with st.spinner("กำลังวิเคราะห์รูปภาพ..."):
             
-            # สร้างลิสต์สี (BGR) ตามลำดับ Class ID ใน results เพื่อบังคับสี YOLO
-            def get_colors(results):
-                colors = []
-                for box in results[0].boxes:
-                    cls_id = int(box.cls[0])
-                    # ถ้าเจอคลาสที่ไม่มีใน COLORS ให้ใช้สีเทา (128, 128, 128) เป็น default
-                    colors.append(COLORS.get(cls_id, (128, 128, 128)))
-                return colors
+            # # สร้างลิสต์สี (BGR) ตามลำดับ Class ID ใน results เพื่อบังคับสี YOLO
+            # def get_colors(results):
+            #     colors = []
+            #     for box in results[0].boxes:
+            #         cls_id = int(box.cls[0])
+            #         # ถ้าเจอคลาสที่ไม่มีใน COLORS ให้ใช้สีเทา (128, 128, 128) เป็น default
+            #         colors.append(COLORS.get(cls_id, (128, 128, 128)))
+            #     return colors
 
             if mode == "Segment (Polygon)":
                 results = model_seg.predict(image, conf=0.5)
                 # ดึงสีมาใช้ในฟังก์ชัน plot
-                custom_colors = get_colors(results)
+                # custom_colors = get_colors(results)
                 # สั่งวาด mask โดยใช้สีที่กำหนด (YOLO อาจต้องการสีเป็นรูปแบบเฉพาะ ขึ้นกับเวอร์ชั่น)
                 # ใน YOLOv8 การเปลี่ยนสีแบบเจาะจงใน plot() อาจทำได้ยาก 
                 # แต่ลองส่ง custom_colors ไปก่อน ถ้าไม่ได้ อาจต้องวาดเองด้วย OpenCV
