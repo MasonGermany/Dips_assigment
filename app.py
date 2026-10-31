@@ -1,6 +1,7 @@
 import streamlit as st
 from PIL import Image
 from ultralytics import YOLO
+from collections import Counter
 
 # ตั้งค่าหน้าเว็บ
 st.set_page_config(page_title="Dog Cat And Couple AI", page_icon="🐶", layout="centered")
@@ -17,6 +18,13 @@ def load_models():
     return model_rect, model_seg
 
 model_rect, model_seg = load_models()
+
+# สร้าง Header อธิบายสีของแต่ละคลาส (YOLOv8 default colors)
+st.info("""
+**สัญลักษณ์สีของ Class:**  
+🟦 แมว (Cat) | 🟨 หมา (Dog) | 🟩 ผู้ชาย (Man) | 🟪 ผู้หญิง (Woman)  
+*(หมายเหตุ: สีอาจแตกต่างกันเล็กน้อยขึ้นอยู่กับค่าเริ่มต้นของโมเดล)*
+""")
 
 # ปุ่มเลือกโหมด
 mode = st.radio("เลือกโหมดการทำงาน:", ("Rectangle (Box)", "Segment (Polygon)"), horizontal=True)
@@ -41,13 +49,22 @@ if uploaded_file is not None:
                 result = results[0]
                 im_array = result.plot(boxes=True, masks=False)
                 
-            # ดึงชื่อคลาสออกมา
+            # ดึงชื่อคลาสออกมาเพื่อนับจำนวน
             detected_classes = [result.names[int(box.cls[0])] for box in result.boxes]
-            unique_classes = list(set(detected_classes))
-            prediction_text = ", ".join(unique_classes) if unique_classes else "Not Found"
+            
+            # นับจำนวนแต่ละคลาสด้วย Counter
+            class_counts = Counter(detected_classes)
+            
+            # สร้างข้อความแสดงผลการนับ
+            if class_counts:
+                count_text = ", ".join([f"{cls} ({count})" for cls, count in class_counts.items()])
+                total_objects = sum(class_counts.values())
+                prediction_summary = f"พบวัตถุทั้งหมด {total_objects} ชิ้น: {count_text}"
+            else:
+                prediction_summary = "ไม่พบวัตถุที่ตรงกับคลาสเป้าหมาย"
             
             # แปลงภาพกลับมาแสดงผล
             im_pil = Image.fromarray(im_array[..., ::-1])
             
-            st.success(f"**ผลการตรวจจับ:** {prediction_text}")
+            st.success(f"**ผลการตรวจจับ:** {prediction_summary}")
             st.image(im_pil, caption="ผลลัพธ์จาก AI", use_container_width=True)
